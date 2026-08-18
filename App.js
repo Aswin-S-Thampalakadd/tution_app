@@ -13,6 +13,7 @@ import HomeScreen from "./src/screens/HomeScreen";
 import CourseDetailScreen from "./src/screens/CourseDetailScreen";
 import MyLearningsScreen from "./src/screens/MyLearningsScreen";
 import ScheduleScreen from "./src/screens/ScheduleScreen";
+import NotificationsScreen from "./src/screens/NotificationsScreen";
 
 import SavedCoursesScreen from "./src/screens/SavedCoursesScreen";
 import LearningHistoryScreen from "./src/screens/LearningHistoryScreen";
@@ -98,7 +99,7 @@ function CustomDrawerContent({ navigation }) {
                 style={styles.drawerItem}
                 onPress={() => navigateToScreen(item.screen, item.params)}
               >
-                <Ionicons name={item.icon} size={22} color="#20434F" />
+                <Ionicons name={item.icon} size={22} color="#6C5CE7" />
                 <Text style={styles.drawerItemText}>{item.label}</Text>
               </TouchableOpacity>
             )}
@@ -110,8 +111,8 @@ function CustomDrawerContent({ navigation }) {
           style={styles.drawerItem}
           onPress={() => alert("Logout")}
         >
-          <Ionicons name="log-out-outline" size={22} color="#F44336" />
-          <Text style={[styles.drawerItemText, { color: "#F44336" }]}>
+          <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
+          <Text style={[styles.drawerItemText, { color: "#FF6B6B" }]}>
             Logout
           </Text>
         </TouchableOpacity>
@@ -125,6 +126,7 @@ function HomeStack() {
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>
   );
 }
@@ -150,6 +152,7 @@ function ProfileStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} />
     </Stack.Navigator>
   );
 }
@@ -160,15 +163,20 @@ function MainTabs() {
       initialRouteName="Home"
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: "#20434F",
+        tabBarActiveTintColor: "#6C5CE7",
         tabBarInactiveTintColor: "#999",
         tabBarStyle: {
           backgroundColor: "#fff",
-          elevation: 0,
-          shadowOpacity: 0,
+          elevation: 8,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -4 },
+          shadowOpacity: 0.08,
+          shadowRadius: 12,
           borderTopWidth: 0,
+          height: 60,
+          paddingBottom: 8,
         },
-        tabBarIcon: ({ color, focused }) => {
+        tabBarIcon: ({ color, focused, size }) => {
           let iconName;
 
           if (route.name === "Home") {
@@ -182,8 +190,13 @@ function MainTabs() {
           }
 
           return (
-            <Ionicons name={iconName} size={focused ? 26 : 20} color={color} />
+            <Ionicons name={iconName} size={focused ? 26 : 22} color={color} />
           );
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: "500",
+          marginTop: 2,
         },
       })}
     >
@@ -234,6 +247,8 @@ export default function App() {
               drawerStyle: {
                 width: 280,
               },
+              drawerActiveTintColor: "#6C5CE7",
+              drawerInactiveTintColor: "#999",
             }}
           >
             <Drawer.Screen name="HomeTabs" component={MainTabs} />
@@ -261,26 +276,30 @@ const styles = StyleSheet.create({
   },
   drawerHeader: {
     paddingTop: 50,
-    paddingBottom: 20,
+    paddingBottom: 24,
     paddingHorizontal: 20,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#F1F2F6",
     alignItems: "center",
+    backgroundColor: "#6C5CE7",
   },
   drawerAvatar: {
     width: 80,
     height: 80,
     borderRadius: 40,
     marginBottom: 10,
+    borderWidth: 3,
+    borderColor: "#fff",
   },
   drawerName: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#fff",
   },
   drawerEmail: {
     fontSize: 13,
-    color: "#999",
+    color: "rgba(255,255,255,0.8)",
+    marginTop: 2,
   },
   drawerItems: {
     flex: 1,
@@ -294,18 +313,19 @@ const styles = StyleSheet.create({
   },
   drawerItemText: {
     fontSize: 15,
-    color: "#20434F",
+    color: "#2D3436",
     marginLeft: 15,
+    fontWeight: "500",
   },
   drawerDivider: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F1F2F6",
     marginVertical: 5,
     marginHorizontal: 20,
   },
   drawerFooter: {
     borderTopWidth: 1,
-    borderTopColor: "#f0f0f0",
+    borderTopColor: "#F1F2F6",
     paddingVertical: 10,
   },
 });

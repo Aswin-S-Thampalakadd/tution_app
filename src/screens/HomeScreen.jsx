@@ -8,14 +8,12 @@ import {
   TouchableOpacity,
   FlatList,
   Dimensions,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import React, { useRef, useState } from "react";
 import { Ionicons } from "@expo/vector-icons";
-import {
-  useNavigation,
-  DrawerActions,
-  CommonActions,
-} from "@react-navigation/native";
+import { useNavigation, DrawerActions } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
@@ -26,7 +24,7 @@ const HomeScreen = () => {
   const tutorsRef = useRef(null);
 
   const categories = [
-    { id: "1", name: "All", icon: "grid-outline" },
+    { id: "1", name: "All", icon: "apps-outline" },
     { id: "2", name: "Math", icon: "calculator-outline" },
     { id: "3", name: "Science", icon: "flask-outline" },
     { id: "4", name: "English", icon: "book-outline" },
@@ -44,6 +42,7 @@ const HomeScreen = () => {
       price: "$49.99",
       image:
         "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
+      color: "#FF6B6B",
     },
     {
       id: "2",
@@ -55,6 +54,7 @@ const HomeScreen = () => {
       price: "$39.99",
       image:
         "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=400",
+      color: "#4ECDC4",
     },
     {
       id: "3",
@@ -66,6 +66,7 @@ const HomeScreen = () => {
       price: "$29.99",
       image:
         "https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=400",
+      color: "#FFA07A",
     },
     {
       id: "4",
@@ -77,6 +78,7 @@ const HomeScreen = () => {
       price: "$79.99",
       image:
         "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=400",
+      color: "#6C5CE7",
     },
   ];
 
@@ -116,12 +118,10 @@ const HomeScreen = () => {
   ];
 
   const openDrawer = () => {
-    // Get the parent navigator (drawer) and open it
     const parent = navigation.getParent();
     if (parent) {
       parent.dispatch(DrawerActions.openDrawer());
     } else {
-      // Fallback: try to dispatch directly
       navigation.dispatch(DrawerActions.openDrawer());
     }
   };
@@ -134,11 +134,13 @@ const HomeScreen = () => {
       ]}
       onPress={() => setActiveCategory(item.name)}
     >
-      <Ionicons
-        name={item.icon}
-        size={24}
-        color={activeCategory === item.name ? "#fff" : "#20434F"}
-      />
+      <View style={styles.categoryIconWrapper}>
+        <Ionicons
+          name={item.icon}
+          size={24}
+          color={activeCategory === item.name ? "#fff" : "#636E72"}
+        />
+      </View>
       <Text
         style={[
           styles.categoryText,
@@ -155,30 +157,37 @@ const HomeScreen = () => {
       style={styles.courseCard}
       onPress={() => navigation.navigate("CourseDetail", { course: item })}
     >
-      <Image source={{ uri: item.image }} style={styles.courseImage} />
-      <View style={styles.courseContent}>
-        <View style={styles.courseHeader}>
-          <Text style={styles.courseTitle} numberOfLines={1}>
-            {item.title}
-          </Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={14} color="#FFD700" />
-            <Text style={styles.ratingText}>{item.rating}</Text>
-          </View>
+      <View style={styles.courseImageWrapper}>
+        <Image source={{ uri: item.image }} style={styles.courseImage} />
+        <View style={[styles.priceTag, { backgroundColor: item.color }]}>
+          <Text style={styles.priceTagText}>{item.price}</Text>
         </View>
+      </View>
+      <View style={styles.courseContent}>
+        <Text style={styles.courseTitle} numberOfLines={1}>
+          {item.title}
+        </Text>
         <Text style={styles.courseInstructor} numberOfLines={1}>
           {item.instructor}
         </Text>
         <View style={styles.courseFooter}>
-          <View style={styles.courseInfo}>
-            <Ionicons name="time-outline" size={14} color="#999" />
-            <Text style={styles.courseInfoText}>{item.duration}</Text>
+          <View style={styles.ratingContainer}>
+            <Ionicons name="star" size={16} color="#FFD700" />
+            <Text style={styles.ratingText}>{item.rating}</Text>
           </View>
-          <View style={styles.courseInfo}>
-            <Ionicons name="people-outline" size={14} color="#999" />
-            <Text style={styles.courseInfoText}>{item.students}</Text>
+          <View style={styles.courseStats}>
+            <View style={styles.courseInfo}>
+              <Ionicons name="people-outline" size={14} color="#999" />
+              <Text style={styles.courseInfoText}>{item.students}</Text>
+            </View>
+            <View style={styles.courseInfo}>
+              <Ionicons name="time-outline" size={14} color="#999" />
+              <Text style={styles.courseInfoText}>{item.duration}</Text>
+            </View>
           </View>
-          <Text style={styles.coursePrice}>{item.price}</Text>
+        </View>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: "65%" }]} />
         </View>
       </View>
     </TouchableOpacity>
@@ -186,142 +195,187 @@ const HomeScreen = () => {
 
   const renderTutor = ({ item }) => (
     <TouchableOpacity style={styles.tutorCard}>
-      <Image source={{ uri: item.image }} style={styles.tutorImage} />
+      <View style={styles.tutorImageWrapper}>
+        <Image source={{ uri: item.image }} style={styles.tutorImage} />
+        <View style={styles.tutorOnlineBadge} />
+      </View>
       <Text style={styles.tutorName}>{item.name}</Text>
       <Text style={styles.tutorSubject}>{item.subject}</Text>
       <View style={styles.tutorRating}>
         <Ionicons name="star" size={16} color="#FFD700" />
         <Text style={styles.tutorRatingText}>{item.rating}</Text>
-        <Text style={styles.tutorStudents}>({item.students} students)</Text>
+        <Text style={styles.tutorStudents}>({item.students})</Text>
       </View>
       <TouchableOpacity style={styles.bookButton}>
-        <Text style={styles.bookButtonText}>Book Now</Text>
+        <Text style={styles.bookButtonText}>Book Session</Text>
       </TouchableOpacity>
     </TouchableOpacity>
   );
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <TouchableOpacity onPress={openDrawer}>
-            <Ionicons name="menu-outline" size={28} color="#20434F" />
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" backgroundColor="#FFFFFF" />
+      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+        <View style={styles.header}>
+          <View style={styles.headerLeft}>
+            <TouchableOpacity onPress={openDrawer} style={styles.menuButton}>
+              <Ionicons name="menu-outline" size={28} color="#2D3436" />
+            </TouchableOpacity>
+            <View>
+              <Text style={styles.greeting}>Hello, John 👋</Text>
+              <Text style={styles.subGreeting}>Ready to learn today?</Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.profileButton}
+            onPress={() => navigation.navigate("Notifications")}
+          >
+            <Image
+              source={{ uri: "https://i.pravatar.cc/150?img=3" }}
+              style={styles.profileImage}
+            />
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationText}>3</Text>
+            </View>
           </TouchableOpacity>
-          <View style={{ marginLeft: 12 }}>
-            <Text style={styles.greeting}>Hi, John 👋</Text>
-            <Text style={styles.subGreeting}>Let's start learning</Text>
+        </View>
+
+        <View style={styles.searchContainer}>
+          <View style={styles.searchWrapper}>
+            <Ionicons name="search-outline" size={20} color="#999" />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search courses..."
+              placeholderTextColor="#999"
+            />
+          </View>
+          <TouchableOpacity style={styles.filterButton}>
+            <Ionicons name="options-outline" size={22} color="#2D3436" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.heroBanner}>
+          <View style={styles.heroContent}>
+            <Text style={styles.heroTitle}>Learn Anywhere,</Text>
+            <Text style={styles.heroTitleHighlight}>Anytime</Text>
+            <Text style={styles.heroSubtitle}>
+              Access top courses from expert tutors around the world
+            </Text>
+            <TouchableOpacity style={styles.heroButton}>
+              <Text style={styles.heroButtonText}>Explore Courses</Text>
+              <Ionicons name="arrow-forward" size={20} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.heroImageWrapper}>
+            <View style={styles.heroImagePlaceholder}>
+              <Ionicons name="school-outline" size={60} color="#fff" />
+            </View>
           </View>
         </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Image
-            source={{ uri: "https://i.pravatar.cc/150?img=3" }}
-            style={styles.profileImage}
-          />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationText}>3</Text>
-          </View>
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.searchContainer}>
-        <Ionicons name="search-outline" size={20} color="#999" />
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search for courses..."
-          placeholderTextColor="#999"
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Categories</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <FlatList
+          horizontal
+          data={categories}
+          renderItem={renderCategory}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          style={styles.categoriesList}
+          contentContainerStyle={styles.categoriesContent}
         />
-        <TouchableOpacity style={styles.filterButton}>
-          <Ionicons name="options-outline" size={20} color="#20434F" />
-        </TouchableOpacity>
-      </View>
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Categories</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Popular Courses</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
 
-      <FlatList
-        horizontal
-        data={categories}
-        renderItem={renderCategory}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        style={styles.categoriesList}
-        contentContainerStyle={styles.categoriesContent}
-      />
+        <FlatList
+          ref={popularCoursesRef}
+          horizontal
+          data={popularCourses}
+          renderItem={renderCourse}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          style={styles.popularList}
+          contentContainerStyle={styles.popularContent}
+          snapToInterval={width * 0.85 + 15}
+          decelerationRate="fast"
+          pagingEnabled={false}
+        />
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Popular Courses</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Top Tutors</Text>
+          <TouchableOpacity>
+            <Text style={styles.seeAll}>See All</Text>
+          </TouchableOpacity>
+        </View>
 
-      <FlatList
-        ref={popularCoursesRef}
-        horizontal
-        data={popularCourses}
-        renderItem={renderCourse}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        style={styles.popularList}
-        contentContainerStyle={styles.popularContent}
-        snapToInterval={width * 0.85 + 15}
-        decelerationRate="fast"
-        pagingEnabled={false}
-      />
+        <FlatList
+          ref={tutorsRef}
+          horizontal
+          data={topTutors}
+          renderItem={renderTutor}
+          keyExtractor={(item) => item.id}
+          showsHorizontalScrollIndicator={false}
+          style={styles.tutorsList}
+          contentContainerStyle={styles.tutorsContent}
+        />
 
-      <View style={styles.sectionHeader}>
-        <Text style={styles.sectionTitle}>Top Tutors</Text>
-        <TouchableOpacity>
-          <Text style={styles.seeAll}>See All</Text>
-        </TouchableOpacity>
-      </View>
-
-      <FlatList
-        ref={tutorsRef}
-        horizontal
-        data={topTutors}
-        renderItem={renderTutor}
-        keyExtractor={(item) => item.id}
-        showsHorizontalScrollIndicator={false}
-        style={styles.tutorsList}
-        contentContainerStyle={styles.tutorsContent}
-      />
-
-      <View style={styles.bottomSpacing} />
-    </ScrollView>
+        <View style={styles.bottomSpacing} />
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#FFFFFF",
+  },
   container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
     paddingHorizontal: 20,
-    paddingTop: 50,
-  },
-  headerLeft: {
-    flexDirection: "row",
-    alignItems: "center",
   },
   header: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    paddingVertical: 16,
+    backgroundColor: "transparent",
+  },
+  headerLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  menuButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 12,
+    backgroundColor: "#F1F2F6",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   greeting: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2D3436",
+    letterSpacing: -0.5,
   },
   subGreeting: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#999",
-    marginTop: 4,
+    marginTop: 2,
+    letterSpacing: -0.3,
   },
   profileButton: {
     position: "relative",
@@ -330,15 +384,17 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    borderWidth: 2,
+    borderColor: "#6C5CE7",
   },
   notificationBadge: {
     position: "absolute",
-    top: -5,
-    right: -5,
+    top: -4,
+    right: -4,
     backgroundColor: "#FF6B6B",
-    borderRadius: 10,
-    width: 20,
-    height: 20,
+    borderRadius: 12,
+    width: 22,
+    height: 22,
     justifyContent: "center",
     alignItems: "center",
     borderWidth: 2,
@@ -347,143 +403,244 @@ const styles = StyleSheet.create({
   notificationText: {
     color: "#fff",
     fontSize: 10,
-    fontWeight: "bold",
+    fontWeight: "700",
   },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingHorizontal: 15,
-    marginBottom: 25,
-    elevation: 2,
+    marginBottom: 24,
+    gap: 12,
+  },
+  searchWrapper: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
   },
   searchInput: {
     flex: 1,
-    height: 50,
-    fontSize: 16,
-    color: "#20434F",
+    height: 52,
+    fontSize: 15,
+    color: "#2D3436",
     marginLeft: 10,
   },
   filterButton: {
-    padding: 8,
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    backgroundColor: "#6C5CE7",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#6C5CE7",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  heroBanner: {
+    flexDirection: "row",
+    backgroundColor: "#6C5CE7",
+    borderRadius: 24,
+    padding: 20,
+    marginBottom: 28,
+    elevation: 8,
+    shadowColor: "#6C5CE7",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.25,
+    shadowRadius: 12,
+  },
+  heroContent: {
+    flex: 1.2,
+    justifyContent: "center",
+  },
+  heroTitle: {
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#FFFFFF",
+    opacity: 0.9,
+  },
+  heroTitleHighlight: {
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#FFFFFF",
+    marginBottom: 6,
+  },
+  heroSubtitle: {
+    fontSize: 13,
+    color: "#FFFFFF",
+    opacity: 0.8,
+    marginBottom: 14,
+    lineHeight: 18,
+  },
+  heroButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 12,
+    alignSelf: "flex-start",
+    gap: 8,
+  },
+  heroButtonText: {
+    color: "#6C5CE7",
+    fontWeight: "700",
+    fontSize: 14,
+  },
+  heroImageWrapper: {
+    flex: 0.8,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  heroImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   sectionHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 15,
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
+    letterSpacing: -0.5,
   },
   seeAll: {
     fontSize: 14,
-    color: "#20434F",
-    fontWeight: "500",
+    color: "#6C5CE7",
+    fontWeight: "600",
   },
   categoriesList: {
     flexGrow: 0,
-    marginBottom: 25,
+    marginBottom: 28,
   },
   categoriesContent: {
     paddingRight: 20,
   },
   categoryCard: {
-    backgroundColor: "#fff",
-    paddingHorizontal: 20,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 18,
     paddingVertical: 12,
-    borderRadius: 12,
+    borderRadius: 16,
     marginRight: 12,
     flexDirection: "row",
     alignItems: "center",
-    elevation: 2,
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
   },
   categoryActive: {
-    backgroundColor: "#20434F",
+    backgroundColor: "#6C5CE7",
+    borderColor: "#6C5CE7",
+  },
+  categoryIconWrapper: {
+    marginRight: 8,
   },
   categoryActiveText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontWeight: "600",
-    marginLeft: 8,
   },
   categoryText: {
-    color: "#20434F",
-    fontWeight: "600",
-    marginLeft: 8,
+    color: "#636E72",
+    fontWeight: "500",
+    fontSize: 14,
   },
   popularList: {
     flexGrow: 0,
-    marginBottom: 30,
+    marginBottom: 32,
   },
   popularContent: {
     paddingRight: 20,
   },
   courseCard: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
     marginRight: 15,
     width: width * 0.85,
     overflow: "hidden",
-    elevation: 3,
+    elevation: 8,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  courseImageWrapper: {
+    position: "relative",
   },
   courseImage: {
     width: "100%",
-    height: 160,
+    height: 170,
+  },
+  priceTag: {
+    position: "absolute",
+    top: 12,
+    right: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 10,
+    backgroundColor: "#FF6B6B",
+  },
+  priceTagText: {
+    color: "#FFFFFF",
+    fontWeight: "700",
+    fontSize: 12,
   },
   courseContent: {
-    padding: 15,
-  },
-  courseHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 4,
+    padding: 16,
   },
   courseTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#20434F",
-    flex: 1,
-    marginRight: 8,
-  },
-  ratingContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#FFF8E1",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 6,
-  },
-  ratingText: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: "#20434F",
-    marginLeft: 3,
+    fontWeight: "700",
+    color: "#2D3436",
+    marginBottom: 4,
   },
   courseInstructor: {
     fontSize: 14,
     color: "#999",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   courseFooter: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2D3436",
+    marginLeft: 4,
+  },
+  courseStats: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
   },
   courseInfo: {
     flexDirection: "row",
@@ -494,10 +651,17 @@ const styles = StyleSheet.create({
     color: "#999",
     marginLeft: 4,
   },
-  coursePrice: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#20434F",
+  progressBar: {
+    width: "100%",
+    height: 4,
+    backgroundColor: "#F1F2F6",
+    borderRadius: 2,
+    overflow: "hidden",
+  },
+  progressFill: {
+    height: "100%",
+    backgroundColor: "#6C5CE7",
+    borderRadius: 2,
   },
   tutorsList: {
     flexGrow: 0,
@@ -507,45 +671,63 @@ const styles = StyleSheet.create({
     paddingRight: 20,
   },
   tutorCard: {
-    backgroundColor: "#fff",
-    borderRadius: 15,
-    padding: 15,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 20,
+    padding: 16,
     marginRight: 15,
-    width: width * 0.55,
+    width: width * 0.52,
     alignItems: "center",
-    elevation: 3,
+    elevation: 6,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
+    shadowOpacity: 0.06,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: "#F0F0F0",
+  },
+  tutorImageWrapper: {
+    position: "relative",
+    marginBottom: 10,
   },
   tutorImage: {
     width: 80,
     height: 80,
     borderRadius: 40,
-    marginBottom: 10,
+    borderWidth: 3,
+    borderColor: "#6C5CE7",
+  },
+  tutorOnlineBadge: {
+    position: "absolute",
+    bottom: 0,
+    right: 0,
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#00B894",
+    borderWidth: 3,
+    borderColor: "#FFFFFF",
   },
   tutorName: {
     fontSize: 16,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
     textAlign: "center",
+    marginBottom: 2,
   },
   tutorSubject: {
     fontSize: 13,
     color: "#999",
-    marginTop: 2,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   tutorRating: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
   },
   tutorRatingText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#20434F",
+    color: "#2D3436",
     marginLeft: 4,
   },
   tutorStudents: {
@@ -554,20 +736,20 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   bookButton: {
-    backgroundColor: "#20434F",
+    backgroundColor: "#6C5CE7",
     paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 8,
+    paddingVertical: 10,
+    borderRadius: 12,
     width: "100%",
     alignItems: "center",
   },
   bookButtonText: {
-    color: "#fff",
+    color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 14,
   },
   bottomSpacing: {
-    height: 20,
+    height: 30,
   },
 });
 

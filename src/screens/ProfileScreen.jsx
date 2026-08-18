@@ -31,24 +31,33 @@ const ProfileScreen = () => {
   const [school, setSchool] = useState("Springfield High School");
   const [notifications, setNotifications] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
-  const [showEditModal, setShowEditModal] = useState(false);
 
   const stats = [
-    { label: "Courses", value: "12" },
-    { label: "Hours", value: "48.5" },
-    { label: "Certificates", value: "4" },
-    { label: "Avg. Score", value: "92%" },
+    { label: "Courses", value: "12", icon: "book-outline", color: "#6C5CE7" },
+    { label: "Hours", value: "48.5", icon: "time-outline", color: "#00B894" },
+    {
+      label: "Certificates",
+      value: "4",
+      icon: "ribbon-outline",
+      color: "#FFD93D",
+    },
+    {
+      label: "Avg. Score",
+      value: "92%",
+      icon: "stats-chart-outline",
+      color: "#FF6B6B",
+    },
   ];
 
   const menuItems = [
-    { icon: "bookmark-outline", label: "Saved Courses", color: "#20434F" },
-    { icon: "time-outline", label: "Learning History", color: "#FF9800" },
-    { icon: "trophy-outline", label: "Achievements", color: "#FFD700" },
-    { icon: "card-outline", label: "Payment Methods", color: "#4CAF50" },
-    { icon: "settings-outline", label: "Settings", color: "#2196F3" },
-    { icon: "help-circle-outline", label: "Help & Support", color: "#9C27B0" },
-    { icon: "information-circle-outline", label: "About", color: "#607D8B" },
-    { icon: "log-out-outline", label: "Logout", color: "#F44336" },
+    { icon: "bookmark-outline", label: "Saved Courses", color: "#6C5CE7" },
+    { icon: "time-outline", label: "Learning History", color: "#00B894" },
+    { icon: "trophy-outline", label: "Achievements", color: "#FFD93D" },
+    { icon: "card-outline", label: "Payment Methods", color: "#FF6B6B" },
+    { icon: "settings-outline", label: "Settings", color: "#6C5CE7" },
+    { icon: "help-circle-outline", label: "Help & Support", color: "#00B894" },
+    { icon: "information-circle-outline", label: "About", color: "#FFD93D" },
+    { icon: "log-out-outline", label: "Logout", color: "#FF6B6B" },
   ];
 
   const pickImage = async () => {
@@ -75,7 +84,6 @@ const ProfileScreen = () => {
 
   const handleSaveProfile = () => {
     setIsEditing(false);
-    setShowEditModal(false);
     Alert.alert("Success", "Profile updated successfully!");
   };
 
@@ -92,6 +100,9 @@ const ProfileScreen = () => {
 
   const ProfileHeader = () => (
     <View style={styles.profileHeader}>
+      <View style={styles.profileBackground}>
+        <View style={styles.profileGradient} />
+      </View>
       <TouchableOpacity style={styles.imageContainer} onPress={pickImage}>
         <Image source={{ uri: profileImage }} style={styles.profileImage} />
         <View style={styles.editImageBadge}>
@@ -102,26 +113,34 @@ const ProfileScreen = () => {
       <Text style={styles.profileGrade}>{grade}</Text>
       <View style={styles.profileStats}>
         {stats.map((stat, index) => (
-          <React.Fragment key={index}>
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>{stat.value}</Text>
-              <Text style={styles.statLabel}>{stat.label}</Text>
+          <View key={index} style={styles.statItem}>
+            <View
+              style={[
+                styles.statIconWrapper,
+                { backgroundColor: stat.color + "20" },
+              ]}
+            >
+              <Ionicons name={stat.icon} size={18} color={stat.color} />
             </View>
-            {index < stats.length - 1 && <View style={styles.statDivider} />}
-          </React.Fragment>
+            <Text style={styles.statValue}>{stat.value}</Text>
+            <Text style={styles.statLabel}>{stat.label}</Text>
+          </View>
         ))}
       </View>
       <TouchableOpacity
-        style={styles.editProfileButton}
+        style={[
+          styles.editProfileButton,
+          isEditing && styles.editProfileActive,
+        ]}
         onPress={() => setIsEditing(!isEditing)}
       >
         <Ionicons
-          name={isEditing ? "close" : "create-outline"}
+          name={isEditing ? "close-outline" : "create-outline"}
           size={20}
           color="#fff"
         />
         <Text style={styles.editProfileText}>
-          {isEditing ? "Close Edit" : "Edit Profile"}
+          {isEditing ? "Cancel" : "Edit Profile"}
         </Text>
       </TouchableOpacity>
     </View>
@@ -129,10 +148,25 @@ const ProfileScreen = () => {
 
   const ProfileInfo = () => (
     <View style={styles.infoSection}>
-      <Text style={styles.sectionTitle}>Personal Information</Text>
+      <View style={styles.sectionHeader}>
+        <Text style={styles.sectionTitle}>Personal Information</Text>
+        {isEditing && (
+          <TouchableOpacity
+            style={styles.saveButton}
+            onPress={handleSaveProfile}
+          >
+            <Ionicons name="save-outline" size={18} color="#fff" />
+            <Text style={styles.saveButtonText}>Save</Text>
+          </TouchableOpacity>
+        )}
+      </View>
       <View style={styles.infoCard}>
         <View style={styles.infoRow}>
-          <Ionicons name="person-outline" size={20} color="#20434F" />
+          <View
+            style={[styles.infoIconWrapper, { backgroundColor: "#6C5CE720" }]}
+          >
+            <Ionicons name="person-outline" size={20} color="#6C5CE7" />
+          </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Full Name</Text>
             {isEditing ? (
@@ -141,6 +175,7 @@ const ProfileScreen = () => {
                 value={name}
                 onChangeText={setName}
                 placeholder="Enter your name"
+                placeholderTextColor="#999"
               />
             ) : (
               <Text style={styles.infoValue}>{name}</Text>
@@ -149,7 +184,11 @@ const ProfileScreen = () => {
         </View>
         <View style={styles.infoDivider} />
         <View style={styles.infoRow}>
-          <Ionicons name="mail-outline" size={20} color="#20434F" />
+          <View
+            style={[styles.infoIconWrapper, { backgroundColor: "#00B89420" }]}
+          >
+            <Ionicons name="mail-outline" size={20} color="#00B894" />
+          </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Email</Text>
             {isEditing ? (
@@ -158,6 +197,7 @@ const ProfileScreen = () => {
                 value={email}
                 onChangeText={setEmail}
                 placeholder="Enter your email"
+                placeholderTextColor="#999"
                 keyboardType="email-address"
               />
             ) : (
@@ -167,7 +207,11 @@ const ProfileScreen = () => {
         </View>
         <View style={styles.infoDivider} />
         <View style={styles.infoRow}>
-          <Ionicons name="call-outline" size={20} color="#20434F" />
+          <View
+            style={[styles.infoIconWrapper, { backgroundColor: "#FFD93D20" }]}
+          >
+            <Ionicons name="call-outline" size={20} color="#FFD93D" />
+          </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Phone</Text>
             {isEditing ? (
@@ -176,6 +220,7 @@ const ProfileScreen = () => {
                 value={phone}
                 onChangeText={setPhone}
                 placeholder="Enter your phone"
+                placeholderTextColor="#999"
                 keyboardType="phone-pad"
               />
             ) : (
@@ -185,7 +230,11 @@ const ProfileScreen = () => {
         </View>
         <View style={styles.infoDivider} />
         <View style={styles.infoRow}>
-          <Ionicons name="school-outline" size={20} color="#20434F" />
+          <View
+            style={[styles.infoIconWrapper, { backgroundColor: "#FF6B6B20" }]}
+          >
+            <Ionicons name="school-outline" size={20} color="#FF6B6B" />
+          </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>School</Text>
             {isEditing ? (
@@ -194,6 +243,7 @@ const ProfileScreen = () => {
                 value={school}
                 onChangeText={setSchool}
                 placeholder="Enter your school"
+                placeholderTextColor="#999"
               />
             ) : (
               <Text style={styles.infoValue}>{school}</Text>
@@ -202,7 +252,11 @@ const ProfileScreen = () => {
         </View>
         <View style={styles.infoDivider} />
         <View style={styles.infoRow}>
-          <Ionicons name="clipboard-outline" size={20} color="#20434F" />
+          <View
+            style={[styles.infoIconWrapper, { backgroundColor: "#6C5CE720" }]}
+          >
+            <Ionicons name="clipboard-outline" size={20} color="#6C5CE7" />
+          </View>
           <View style={styles.infoContent}>
             <Text style={styles.infoLabel}>Bio</Text>
             {isEditing ? (
@@ -211,6 +265,7 @@ const ProfileScreen = () => {
                 value={bio}
                 onChangeText={setBio}
                 placeholder="Enter your bio"
+                placeholderTextColor="#999"
                 multiline
                 numberOfLines={3}
               />
@@ -220,12 +275,6 @@ const ProfileScreen = () => {
           </View>
         </View>
       </View>
-      {isEditing && (
-        <TouchableOpacity style={styles.saveButton} onPress={handleSaveProfile}>
-          <Ionicons name="save-outline" size={20} color="#fff" />
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 
@@ -235,27 +284,51 @@ const ProfileScreen = () => {
       <View style={styles.infoCard}>
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceLeft}>
-            <Ionicons name="notifications-outline" size={20} color="#20434F" />
-            <Text style={styles.preferenceLabel}>Push Notifications</Text>
+            <View
+              style={[styles.preferenceIcon, { backgroundColor: "#6C5CE720" }]}
+            >
+              <Ionicons
+                name="notifications-outline"
+                size={20}
+                color="#6C5CE7"
+              />
+            </View>
+            <View>
+              <Text style={styles.preferenceLabel}>Push Notifications</Text>
+              <Text style={styles.preferenceSubtext}>
+                Receive class reminders
+              </Text>
+            </View>
           </View>
           <Switch
             value={notifications}
             onValueChange={setNotifications}
-            trackColor={{ false: "#e0e0e0", true: "#20434F" }}
-            thumbColor={notifications ? "#fff" : "#fff"}
+            trackColor={{ false: "#F1F2F6", true: "#6C5CE7" }}
+            thumbColor="#fff"
+            ios_backgroundColor="#F1F2F6"
           />
         </View>
         <View style={styles.infoDivider} />
         <View style={styles.preferenceRow}>
           <View style={styles.preferenceLeft}>
-            <Ionicons name="moon-outline" size={20} color="#20434F" />
-            <Text style={styles.preferenceLabel}>Dark Mode</Text>
+            <View
+              style={[styles.preferenceIcon, { backgroundColor: "#00B89420" }]}
+            >
+              <Ionicons name="moon-outline" size={20} color="#00B894" />
+            </View>
+            <View>
+              <Text style={styles.preferenceLabel}>Dark Mode</Text>
+              <Text style={styles.preferenceSubtext}>
+                Switch theme appearance
+              </Text>
+            </View>
           </View>
           <Switch
             value={darkMode}
             onValueChange={setDarkMode}
-            trackColor={{ false: "#e0e0e0", true: "#20434F" }}
-            thumbColor={darkMode ? "#fff" : "#fff"}
+            trackColor={{ false: "#F1F2F6", true: "#00B894" }}
+            thumbColor="#fff"
+            ios_backgroundColor="#F1F2F6"
           />
         </View>
       </View>
@@ -279,7 +352,14 @@ const ProfileScreen = () => {
               }}
             >
               <View style={styles.menuLeft}>
-                <Ionicons name={item.icon} size={22} color={item.color} />
+                <View
+                  style={[
+                    styles.menuIconWrapper,
+                    { backgroundColor: item.color + "20" },
+                  ]}
+                >
+                  <Ionicons name={item.icon} size={20} color={item.color} />
+                </View>
                 <Text style={styles.menuLabel}>{item.label}</Text>
               </View>
               <Ionicons name="chevron-forward-outline" size={20} color="#ccc" />
@@ -295,14 +375,7 @@ const ProfileScreen = () => {
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FA" />
-
-      <View style={styles.header}>
-        <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity style={styles.shareButton}>
-          <Ionicons name="share-social-outline" size={24} color="#20434F" />
-        </TouchableOpacity>
-      </View>
+      <StatusBar barStyle="light-content" backgroundColor="#6C5CE7" />
 
       <ProfileHeader />
       <ProfileInfo />
@@ -325,15 +398,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 15,
-    backgroundColor: "#fff",
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingBottom: 16,
+    backgroundColor: "#6C5CE7",
   },
   headerTitle: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#fff",
+    letterSpacing: -0.5,
   },
   shareButton: {
     padding: 8,
@@ -341,42 +413,71 @@ const styles = StyleSheet.create({
   profileHeader: {
     backgroundColor: "#fff",
     alignItems: "center",
-    paddingVertical: 20,
-    marginBottom: 15,
-    borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    paddingBottom: 20,
+    marginBottom: 16,
+    position: "relative",
+    borderBottomLeftRadius: 24,
+    borderBottomRightRadius: 24,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
+  },
+  profileBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 100,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    overflow: "hidden",
+  },
+  profileGradient: {
+    flex: 1,
+    backgroundColor: "#6C5CE7",
+    opacity: 0.8,
   },
   imageContainer: {
     position: "relative",
+    marginTop: 40,
   },
   profileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    borderWidth: 3,
-    borderColor: "#20434F",
+    width: 110,
+    height: 110,
+    borderRadius: 55,
+    borderWidth: 4,
+    borderColor: "#6C5CE7",
+    backgroundColor: "#fff",
   },
   editImageBadge: {
     position: "absolute",
     bottom: 0,
     right: 0,
-    backgroundColor: "#20434F",
-    borderRadius: 15,
-    width: 30,
-    height: 30,
+    backgroundColor: "#6C5CE7",
+    borderRadius: 16,
+    width: 32,
+    height: 32,
     justifyContent: "center",
     alignItems: "center",
-    borderWidth: 2,
+    borderWidth: 3,
     borderColor: "#fff",
+    elevation: 4,
+    shadowColor: "#6C5CE7",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   profileName: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontSize: 24,
+    fontWeight: "700",
+    color: "#2D3436",
     marginTop: 12,
+    letterSpacing: -0.5,
   },
   profileGrade: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#999",
     marginTop: 2,
   },
@@ -385,68 +486,98 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingHorizontal: 20,
     width: "100%",
+    gap: 8,
   },
   statItem: {
     flex: 1,
     alignItems: "center",
+    paddingVertical: 8,
+    borderRadius: 12,
+    backgroundColor: "#F8F9FA",
+  },
+  statIconWrapper: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 4,
   },
   statValue: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
   },
   statLabel: {
     fontSize: 11,
     color: "#999",
-    marginTop: 2,
-  },
-  statDivider: {
-    width: 1,
-    backgroundColor: "#e0e0e0",
+    marginTop: 1,
   },
   editProfileButton: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#20434F",
-    paddingHorizontal: 20,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: "#6C5CE7",
+    paddingHorizontal: 24,
+    paddingVertical: 10,
+    borderRadius: 25,
     marginTop: 16,
     gap: 8,
+    elevation: 4,
+    shadowColor: "#6C5CE7",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  editProfileActive: {
+    backgroundColor: "#FF6B6B",
+    shadowColor: "#FF6B6B",
   },
   editProfileText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 14,
+    fontSize: 15,
   },
   infoSection: {
     paddingHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 16,
+  },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
   },
   sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#20434F",
-    marginBottom: 10,
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2D3436",
+    letterSpacing: -0.3,
   },
   infoCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
-    elevation: 2,
+    borderRadius: 16,
+    padding: 16,
+    elevation: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.04,
+    shadowRadius: 12,
   },
   infoRow: {
     flexDirection: "row",
     alignItems: "flex-start",
     paddingVertical: 4,
   },
+  infoIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+  },
   infoContent: {
     flex: 1,
-    marginLeft: 12,
   },
   infoLabel: {
     fontSize: 12,
@@ -455,18 +586,18 @@ const styles = StyleSheet.create({
   },
   infoValue: {
     fontSize: 15,
-    color: "#20434F",
+    color: "#2D3436",
     fontWeight: "500",
   },
   infoInput: {
     fontSize: 15,
-    color: "#20434F",
+    color: "#2D3436",
     borderWidth: 1,
-    borderColor: "#e0e0e0",
+    borderColor: "#F1F2F6",
     borderRadius: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 12,
     paddingVertical: 6,
-    backgroundColor: "#f8f9fa",
+    backgroundColor: "#F8F9FA",
   },
   bioInput: {
     minHeight: 60,
@@ -474,23 +605,27 @@ const styles = StyleSheet.create({
   },
   infoDivider: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F1F2F6",
     marginVertical: 8,
   },
   saveButton: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#4CAF50",
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 10,
-    gap: 8,
+    backgroundColor: "#00B894",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    gap: 6,
+    elevation: 4,
+    shadowColor: "#00B894",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
   },
   saveButtonText: {
     color: "#fff",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 14,
   },
   preferenceRow: {
     flexDirection: "row",
@@ -503,10 +638,22 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
+  preferenceIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   preferenceLabel: {
     fontSize: 15,
-    color: "#20434F",
+    color: "#2D3436",
     fontWeight: "500",
+  },
+  preferenceSubtext: {
+    fontSize: 12,
+    color: "#999",
+    marginTop: 1,
   },
   menuItem: {
     flexDirection: "row",
@@ -519,14 +666,21 @@ const styles = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
+  menuIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: "center",
+    alignItems: "center",
+  },
   menuLabel: {
     fontSize: 15,
-    color: "#20434F",
+    color: "#2D3436",
     fontWeight: "500",
   },
   menuDivider: {
     height: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#F1F2F6",
   },
   bottomSpacing: {
     height: 20,

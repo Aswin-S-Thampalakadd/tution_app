@@ -9,6 +9,7 @@ import {
   Dimensions,
   SafeAreaView,
   StatusBar,
+  FlatList,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -19,6 +20,7 @@ const CourseDetailScreen = ({ route }) => {
   const navigation = useNavigation();
   const { course } = route.params;
   const [activeTab, setActiveTab] = useState("Overview");
+  const [isEnrolled, setIsEnrolled] = useState(false);
 
   const chapters = [
     {
@@ -26,31 +28,42 @@ const CourseDetailScreen = ({ route }) => {
       title: "Introduction to Algebra",
       duration: "45 min",
       completed: false,
+      locked: false,
     },
     {
       id: "2",
       title: "Linear Equations",
       duration: "60 min",
       completed: false,
+      locked: false,
     },
     {
       id: "3",
       title: "Quadratic Equations",
       duration: "50 min",
       completed: false,
+      locked: false,
     },
-    { id: "4", title: "Polynomials", duration: "55 min", completed: false },
+    {
+      id: "4",
+      title: "Polynomials",
+      duration: "55 min",
+      completed: false,
+      locked: true,
+    },
     {
       id: "5",
       title: "Trigonometry Basics",
       duration: "70 min",
       completed: false,
+      locked: true,
     },
     {
       id: "6",
       title: "Geometry Fundamentals",
       duration: "65 min",
       completed: false,
+      locked: true,
     },
   ];
 
@@ -93,6 +106,27 @@ const CourseDetailScreen = ({ route }) => {
     bio: "PhD in Mathematics from Stanford University. Passionate about making math fun and accessible for all students.",
   };
 
+  const similarCourses = [
+    {
+      id: "1",
+      title: "Advanced Calculus",
+      instructor: "Prof. Michael Chen",
+      rating: 4.9,
+      price: "$59.99",
+      image:
+        "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400",
+    },
+    {
+      id: "2",
+      title: "Statistics & Probability",
+      instructor: "Dr. Emily Watson",
+      rating: 4.7,
+      price: "$44.99",
+      image:
+        "https://images.unsplash.com/photo-1530023367847-a683933f4172?w=400",
+    },
+  ];
+
   const renderStars = (rating) => {
     let stars = [];
     for (let i = 1; i <= 5; i++) {
@@ -108,30 +142,60 @@ const CourseDetailScreen = ({ route }) => {
     return stars;
   };
 
-  const OverviewTab = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.infoCard}>
-        <View style={styles.infoRow}>
-          <View style={styles.infoItem}>
-            <Ionicons name="time-outline" size={20} color="#20434F" />
-            <Text style={styles.infoLabel}>Duration</Text>
-            <Text style={styles.infoValue}>{course.duration}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="people-outline" size={20} color="#20434F" />
-            <Text style={styles.infoLabel}>Students</Text>
-            <Text style={styles.infoValue}>{course.students}</Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Ionicons name="book-outline" size={20} color="#20434F" />
-            <Text style={styles.infoLabel}>Chapters</Text>
-            <Text style={styles.infoValue}>{chapters.length}</Text>
+  const renderChapter = ({ item, index }) => (
+    <TouchableOpacity
+      style={[styles.chapterItem, item.completed && styles.chapterCompleted]}
+      disabled={item.locked}
+    >
+      <View style={styles.chapterLeft}>
+        <View style={styles.chapterNumber}>
+          <Text style={styles.chapterNumberText}>{index + 1}</Text>
+        </View>
+        <View style={styles.chapterContent}>
+          <Text style={styles.chapterTitle}>{item.title}</Text>
+          <View style={styles.chapterMeta}>
+            <Ionicons name="time-outline" size={14} color="#999" />
+            <Text style={styles.chapterDuration}>{item.duration}</Text>
           </View>
         </View>
       </View>
+      {item.locked ? (
+        <Ionicons name="lock-closed" size={20} color="#999" />
+      ) : item.completed ? (
+        <Ionicons name="checkmark-circle" size={24} color="#00B894" />
+      ) : (
+        <Ionicons name="play-circle" size={24} color="#6C5CE7" />
+      )}
+    </TouchableOpacity>
+  );
 
-      <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>Course Description</Text>
+  const OverviewTab = () => (
+    <View style={styles.tabContent}>
+      <View style={styles.statsGrid}>
+        <View style={styles.statCard}>
+          <Ionicons name="time-outline" size={24} color="#6C5CE7" />
+          <Text style={styles.statValue}>{course.duration}</Text>
+          <Text style={styles.statLabel}>Duration</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="people-outline" size={24} color="#6C5CE7" />
+          <Text style={styles.statValue}>{course.students}</Text>
+          <Text style={styles.statLabel}>Students</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="book-outline" size={24} color="#6C5CE7" />
+          <Text style={styles.statValue}>{chapters.length}</Text>
+          <Text style={styles.statLabel}>Chapters</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Ionicons name="star-outline" size={24} color="#6C5CE7" />
+          <Text style={styles.statValue}>{course.rating}</Text>
+          <Text style={styles.statLabel}>Rating</Text>
+        </View>
+      </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>About This Course</Text>
         <Text style={styles.description}>
           This comprehensive {course.title} course covers all fundamental
           concepts with practical examples and interactive exercises. Perfect
@@ -140,16 +204,18 @@ const CourseDetailScreen = ({ route }) => {
         </Text>
       </View>
 
-      <View style={styles.sectionContainer}>
+      <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>What You'll Learn</Text>
         {chapters.slice(0, 4).map((chapter) => (
           <View key={chapter.id} style={styles.learningItem}>
-            <Ionicons name="checkmark-circle" size={20} color="#20434F" />
+            <View style={styles.learningCheck}>
+              <Ionicons name="checkmark" size={16} color="#fff" />
+            </View>
             <Text style={styles.learningText}>{chapter.title}</Text>
           </View>
         ))}
         <TouchableOpacity style={styles.viewAllButton}>
-          <Text style={styles.viewAllText}>View All Chapters</Text>
+          <Text style={styles.viewAllText}>View All Chapters →</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -157,49 +223,48 @@ const CourseDetailScreen = ({ route }) => {
 
   const ChaptersTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.sectionContainer}>
+      <View style={styles.sectionCard}>
         <View style={styles.progressHeader}>
-          <Text style={styles.sectionTitle}>Course Chapters</Text>
-          <Text style={styles.progressText}>0/{chapters.length} Completed</Text>
+          <View>
+            <Text style={styles.sectionTitle}>Course Progress</Text>
+            <Text style={styles.progressSubtext}>
+              0 of {chapters.length} completed
+            </Text>
+          </View>
+          <Text style={styles.progressPercent}>0%</Text>
         </View>
         <View style={styles.progressBar}>
           <View style={[styles.progressFill, { width: "0%" }]} />
         </View>
-        {chapters.map((chapter, index) => (
-          <TouchableOpacity key={chapter.id} style={styles.chapterItem}>
-            <View style={styles.chapterNumber}>
-              <Text style={styles.chapterNumberText}>{index + 1}</Text>
-            </View>
-            <View style={styles.chapterContent}>
-              <Text style={styles.chapterTitle}>{chapter.title}</Text>
-              <View style={styles.chapterMeta}>
-                <Ionicons name="time-outline" size={14} color="#999" />
-                <Text style={styles.chapterDuration}>{chapter.duration}</Text>
-                <View style={styles.chapterStatus}>
-                  <Text style={styles.chapterStatusText}>Not Started</Text>
-                </View>
-              </View>
-            </View>
-            <Ionicons name="play-circle-outline" size={24} color="#20434F" />
-          </TouchableOpacity>
-        ))}
+      </View>
+
+      <View style={styles.sectionCard}>
+        <Text style={styles.sectionTitle}>All Chapters</Text>
+        <FlatList
+          data={chapters}
+          renderItem={renderChapter}
+          keyExtractor={(item) => item.id}
+          scrollEnabled={false}
+        />
       </View>
     </View>
   );
 
   const TutorTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.tutorCard}>
+      <View style={styles.tutorProfileCard}>
         <Image source={{ uri: tutor.image }} style={styles.tutorProfileImage} />
-        <Text style={styles.tutorProfileName}>{tutor.name}</Text>
-        <Text style={styles.tutorProfileSubject}>{tutor.subject}</Text>
-        <View style={styles.tutorProfileRating}>
-          {renderStars(tutor.rating)}
-          <Text style={styles.tutorProfileRatingText}>{tutor.rating}</Text>
+        <View style={styles.tutorProfileInfo}>
+          <Text style={styles.tutorProfileName}>{tutor.name}</Text>
+          <Text style={styles.tutorProfileSubject}>{tutor.subject}</Text>
+          <View style={styles.tutorProfileRating}>
+            {renderStars(tutor.rating)}
+            <Text style={styles.tutorProfileRatingText}>{tutor.rating}</Text>
+          </View>
         </View>
       </View>
 
-      <View style={styles.tutorStats}>
+      <View style={styles.tutorStatsRow}>
         <View style={styles.tutorStatItem}>
           <Text style={styles.tutorStatNumber}>{tutor.students}+</Text>
           <Text style={styles.tutorStatLabel}>Students</Text>
@@ -216,9 +281,13 @@ const CourseDetailScreen = ({ route }) => {
         </View>
       </View>
 
-      <View style={styles.sectionContainer}>
+      <View style={styles.sectionCard}>
         <Text style={styles.sectionTitle}>About the Tutor</Text>
         <Text style={styles.description}>{tutor.bio}</Text>
+        <TouchableOpacity style={styles.messageButton}>
+          <Ionicons name="chatbubble-outline" size={20} color="#6C5CE7" />
+          <Text style={styles.messageButtonText}>Message Tutor</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -226,11 +295,47 @@ const CourseDetailScreen = ({ route }) => {
   const ReviewsTab = () => (
     <View style={styles.tabContent}>
       <View style={styles.ratingSummary}>
-        <Text style={styles.ratingBig}>{course.rating}</Text>
-        <View style={styles.ratingStarsBig}>{renderStars(course.rating)}</View>
-        <Text style={styles.ratingCount}>
-          Based on {course.students} reviews
-        </Text>
+        <View style={styles.ratingLeft}>
+          <Text style={styles.ratingBig}>{course.rating}</Text>
+          <View style={styles.ratingStarsBig}>
+            {renderStars(course.rating)}
+          </View>
+          <Text style={styles.ratingCount}>
+            Based on {course.students} reviews
+          </Text>
+        </View>
+        <View style={styles.ratingRight}>
+          <View style={styles.ratingBarItem}>
+            <Text style={styles.ratingBarLabel}>5</Text>
+            <View style={styles.ratingBarTrack}>
+              <View style={[styles.ratingBarFill, { width: "80%" }]} />
+            </View>
+          </View>
+          <View style={styles.ratingBarItem}>
+            <Text style={styles.ratingBarLabel}>4</Text>
+            <View style={styles.ratingBarTrack}>
+              <View style={[styles.ratingBarFill, { width: "60%" }]} />
+            </View>
+          </View>
+          <View style={styles.ratingBarItem}>
+            <Text style={styles.ratingBarLabel}>3</Text>
+            <View style={styles.ratingBarTrack}>
+              <View style={[styles.ratingBarFill, { width: "30%" }]} />
+            </View>
+          </View>
+          <View style={styles.ratingBarItem}>
+            <Text style={styles.ratingBarLabel}>2</Text>
+            <View style={styles.ratingBarTrack}>
+              <View style={[styles.ratingBarFill, { width: "10%" }]} />
+            </View>
+          </View>
+          <View style={styles.ratingBarItem}>
+            <Text style={styles.ratingBarLabel}>1</Text>
+            <View style={styles.ratingBarTrack}>
+              <View style={[styles.ratingBarFill, { width: "5%" }]} />
+            </View>
+          </View>
+        </View>
       </View>
 
       {reviews.map((review) => (
@@ -275,40 +380,36 @@ const CourseDetailScreen = ({ route }) => {
 
   return (
     <SafeAreaView style={styles.safeContainer}>
-      <StatusBar barStyle="dark-content" backgroundColor="#F8F9FA" />
+      <StatusBar barStyle="light-content" backgroundColor="#6C5CE7" />
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.imageContainer}>
           <Image source={{ uri: course.image }} style={styles.mainImage} />
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Ionicons name="arrow-back" size={24} color="#fff" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.bookmarkButton}>
-            <Ionicons name="bookmark-outline" size={24} color="#fff" />
-          </TouchableOpacity>
+          <View style={styles.imageOverlay}>
+            <TouchableOpacity
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Ionicons name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.bookmarkButton}>
+              <Ionicons name="bookmark-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          </View>
+          <View style={styles.priceBadge}>
+            <Text style={styles.priceBadgeText}>{course.price}</Text>
+          </View>
         </View>
 
         <View style={styles.contentContainer}>
           <View style={styles.titleSection}>
             <Text style={styles.courseTitle}>{course.title}</Text>
-            <Text style={styles.courseSubtitle}>{course.instructor}</Text>
-          </View>
-
-          <View style={styles.quickActions}>
-            <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="share-social-outline" size={20} color="#20434F" />
-              <Text style={styles.actionText}>Share</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="download-outline" size={20} color="#20434F" />
-              <Text style={styles.actionText}>Download</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.actionButton}>
-              <Ionicons name="heart-outline" size={20} color="#20434F" />
-              <Text style={styles.actionText}>Save</Text>
-            </TouchableOpacity>
+            <View style={styles.instructorRow}>
+              <Text style={styles.courseSubtitle}>{course.instructor}</Text>
+              <View style={styles.ratingPill}>
+                <Ionicons name="star" size={14} color="#FFD700" />
+                <Text style={styles.ratingPillText}>{course.rating}</Text>
+              </View>
+            </View>
           </View>
 
           <View style={styles.tabContainer}>
@@ -332,15 +433,60 @@ const CourseDetailScreen = ({ route }) => {
 
           {renderTabContent()}
 
-          <TouchableOpacity style={styles.enrollButton}>
-            <Text style={styles.enrollButtonText}>
-              Enroll Now - {course.price}
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.similarSection}>
+            <Text style={styles.sectionTitle}>You Might Also Like</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              {similarCourses.map((item) => (
+                <TouchableOpacity key={item.id} style={styles.similarCard}>
+                  <Image
+                    source={{ uri: item.image }}
+                    style={styles.similarImage}
+                  />
+                  <View style={styles.similarContent}>
+                    <Text style={styles.similarTitle} numberOfLines={1}>
+                      {item.title}
+                    </Text>
+                    <Text style={styles.similarInstructor} numberOfLines={1}>
+                      {item.instructor}
+                    </Text>
+                    <View style={styles.similarFooter}>
+                      <View style={styles.similarRating}>
+                        <Ionicons name="star" size={12} color="#FFD700" />
+                        <Text style={styles.similarRatingText}>
+                          {item.rating}
+                        </Text>
+                      </View>
+                      <Text style={styles.similarPrice}>{item.price}</Text>
+                    </View>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
           <View style={styles.bottomSpacing} />
         </View>
       </ScrollView>
+
+      <View style={styles.bottomBar}>
+        <View style={styles.bottomBarLeft}>
+          <Text style={styles.bottomBarPrice}>{course.price}</Text>
+          <Text style={styles.bottomBarSubtext}>One-time payment</Text>
+        </View>
+        <TouchableOpacity
+          style={[styles.enrollButton, isEnrolled && styles.enrolledButton]}
+          onPress={() => setIsEnrolled(!isEnrolled)}
+        >
+          <Text style={styles.enrollButtonText}>
+            {isEnrolled ? "Continue Learning" : "Enroll Now"}
+          </Text>
+          <Ionicons
+            name={isEnrolled ? "arrow-forward" : "play-circle"}
+            size={24}
+            color="#fff"
+          />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
@@ -357,94 +503,114 @@ const styles = StyleSheet.create({
   imageContainer: {
     position: "relative",
     width: "100%",
-    height: 250,
+    height: 280,
   },
   mainImage: {
     width: "100%",
     height: "100%",
-    borderBottomLeftRadius: 30,
-    borderBottomRightRadius: 30,
+  },
+  imageOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    padding: 20,
+    paddingTop: 40,
   },
   backButton: {
-    position: "absolute",
-    top: 20,
-    left: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 25,
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
   bookmarkButton: {
-    position: "absolute",
-    top: 20,
-    right: 20,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    borderRadius: 25,
-    width: 40,
-    height: 40,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: "rgba(0,0,0,0.4)",
     justifyContent: "center",
     alignItems: "center",
   },
+  priceBadge: {
+    position: "absolute",
+    bottom: -20,
+    right: 20,
+    backgroundColor: "#6C5CE7",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 16,
+    elevation: 6,
+    shadowColor: "#6C5CE7",
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+  },
+  priceBadgeText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "700",
+  },
   contentContainer: {
     paddingHorizontal: 20,
-    paddingTop: 20,
+    paddingTop: 30,
   },
   titleSection: {
     marginBottom: 20,
   },
   courseTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#20434F",
-    marginBottom: 6,
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#2D3436",
+    marginBottom: 8,
+    letterSpacing: -0.5,
+  },
+  instructorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   courseSubtitle: {
-    fontSize: 16,
-    color: "#666",
+    fontSize: 15,
+    color: "#999",
   },
-  quickActions: {
+  ratingPill: {
     flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 25,
-    paddingVertical: 15,
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    elevation: 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-  },
-  actionButton: {
     alignItems: "center",
+    backgroundColor: "#FFF8E1",
+    paddingHorizontal: 12,
+    paddingVertical: 4,
+    borderRadius: 12,
+    gap: 4,
   },
-  actionText: {
-    fontSize: 12,
-    color: "#20434F",
-    marginTop: 4,
+  ratingPillText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#2D3436",
   },
   tabContainer: {
     flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 4,
     marginBottom: 20,
-    elevation: 2,
+    elevation: 4,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
   },
   tab: {
     flex: 1,
     paddingVertical: 10,
-    borderRadius: 8,
+    borderRadius: 12,
     alignItems: "center",
   },
   activeTab: {
-    backgroundColor: "#20434F",
+    backgroundColor: "#6C5CE7",
   },
   tabText: {
     fontSize: 13,
@@ -457,116 +623,143 @@ const styles = StyleSheet.create({
   tabContent: {
     marginBottom: 20,
   },
-  infoCard: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 20,
+  statsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 10,
     marginBottom: 20,
+  },
+  statCard: {
+    flex: 1,
+    minWidth: "45%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 16,
+    alignItems: "center",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+  statValue: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#2D3436",
+    marginTop: 6,
   },
-  infoItem: {
-    alignItems: "center",
-  },
-  infoLabel: {
+  statLabel: {
     fontSize: 12,
     color: "#999",
-    marginTop: 4,
-  },
-  infoValue: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#20434F",
     marginTop: 2,
   },
-  sectionContainer: {
+  sectionCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
     marginBottom: 20,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
     marginBottom: 12,
+    letterSpacing: -0.3,
   },
   description: {
-    fontSize: 14,
+    fontSize: 15,
     color: "#666",
-    lineHeight: 22,
+    lineHeight: 24,
   },
   learningItem: {
     flexDirection: "row",
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 12,
+  },
+  learningCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: "#6C5CE7",
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
   },
   learningText: {
     fontSize: 14,
     color: "#444",
-    marginLeft: 10,
+    flex: 1,
   },
   viewAllButton: {
-    marginTop: 8,
-    alignSelf: "center",
+    marginTop: 4,
+    alignSelf: "flex-start",
   },
   viewAllText: {
-    color: "#20434F",
+    color: "#6C5CE7",
     fontWeight: "600",
     fontSize: 14,
   },
   progressHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 8,
+    alignItems: "center",
+    marginBottom: 10,
   },
-  progressText: {
-    fontSize: 14,
+  progressSubtext: {
+    fontSize: 13,
     color: "#999",
+    marginTop: 2,
+  },
+  progressPercent: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#6C5CE7",
   },
   progressBar: {
-    height: 6,
-    backgroundColor: "#e0e0e0",
-    borderRadius: 3,
-    marginBottom: 16,
+    height: 8,
+    backgroundColor: "#F1F2F6",
+    borderRadius: 4,
+    overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#20434F",
-    borderRadius: 3,
+    backgroundColor: "#6C5CE7",
+    borderRadius: 4,
   },
   chapterItem: {
     flexDirection: "row",
     alignItems: "center",
-    paddingVertical: 12,
+    justifyContent: "space-between",
+    paddingVertical: 14,
     borderBottomWidth: 1,
-    borderBottomColor: "#f0f0f0",
+    borderBottomColor: "#F1F2F6",
+  },
+  chapterCompleted: {
+    opacity: 0.7,
+  },
+  chapterLeft: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
   },
   chapterNumber: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
-    backgroundColor: "#F0F4F8",
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#F1F2F6",
     justifyContent: "center",
     alignItems: "center",
-    marginRight: 12,
+    marginRight: 14,
   },
   chapterNumberText: {
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: "600",
-    color: "#20434F",
+    color: "#6C5CE7",
   },
   chapterContent: {
     flex: 1,
@@ -574,8 +767,8 @@ const styles = StyleSheet.create({
   chapterTitle: {
     fontSize: 15,
     fontWeight: "500",
-    color: "#20434F",
-    marginBottom: 4,
+    color: "#2D3436",
+    marginBottom: 3,
   },
   chapterMeta: {
     flexDirection: "row",
@@ -585,46 +778,40 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: "#999",
     marginLeft: 4,
-    marginRight: 12,
   },
-  chapterStatus: {
-    backgroundColor: "#FFF3E0",
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  chapterStatusText: {
-    fontSize: 10,
-    color: "#FF9800",
-    fontWeight: "500",
-  },
-  tutorCard: {
+  tutorProfileCard: {
+    flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    alignItems: "center",
     marginBottom: 20,
+    alignItems: "center",
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
   },
   tutorProfileImage: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    marginBottom: 12,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    marginRight: 16,
+    borderWidth: 3,
+    borderColor: "#6C5CE7",
+  },
+  tutorProfileInfo: {
+    flex: 1,
   },
   tutorProfileName: {
     fontSize: 20,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
   },
   tutorProfileSubject: {
     fontSize: 14,
     color: "#999",
-    marginBottom: 6,
+    marginVertical: 4,
   },
   tutorProfileRating: {
     flexDirection: "row",
@@ -633,20 +820,20 @@ const styles = StyleSheet.create({
   tutorProfileRatingText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#20434F",
+    color: "#2D3436",
     marginLeft: 6,
   },
-  tutorStats: {
+  tutorStatsRow: {
     flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 20,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
   },
   tutorStatItem: {
     flex: 1,
@@ -654,8 +841,8 @@ const styles = StyleSheet.create({
   },
   tutorStatNumber: {
     fontSize: 18,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
   },
   tutorStatLabel: {
     fontSize: 12,
@@ -664,43 +851,93 @@ const styles = StyleSheet.create({
   },
   tutorStatDivider: {
     width: 1,
-    backgroundColor: "#e0e0e0",
+    backgroundColor: "#F1F2F6",
+  },
+  messageButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#F8F9FA",
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginTop: 16,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: "#6C5CE7",
+  },
+  messageButtonText: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#6C5CE7",
   },
   ratingSummary: {
+    flexDirection: "row",
     backgroundColor: "#fff",
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 20,
-    alignItems: "center",
     marginBottom: 20,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  ratingLeft: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
   },
   ratingBig: {
     fontSize: 48,
-    fontWeight: "bold",
-    color: "#20434F",
+    fontWeight: "700",
+    color: "#2D3436",
   },
   ratingStarsBig: {
     flexDirection: "row",
-    marginVertical: 8,
+    marginVertical: 6,
   },
   ratingCount: {
-    fontSize: 14,
+    fontSize: 13,
     color: "#999",
+  },
+  ratingRight: {
+    flex: 1,
+    justifyContent: "center",
+    gap: 4,
+  },
+  ratingBarItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+  },
+  ratingBarLabel: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#999",
+    width: 16,
+  },
+  ratingBarTrack: {
+    flex: 1,
+    height: 6,
+    backgroundColor: "#F1F2F6",
+    borderRadius: 3,
+    overflow: "hidden",
+  },
+  ratingBarFill: {
+    height: "100%",
+    backgroundColor: "#6C5CE7",
+    borderRadius: 3,
   },
   reviewCard: {
     backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 16,
+    padding: 16,
     marginBottom: 12,
     elevation: 1,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    shadowOpacity: 0.03,
+    shadowRadius: 4,
   },
   reviewHeader: {
     flexDirection: "row",
@@ -708,18 +945,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reviewerImage: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     marginRight: 12,
   },
   reviewerInfo: {
     flex: 1,
   },
   reviewerName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: "#20434F",
+    color: "#2D3436",
   },
   reviewerRating: {
     flexDirection: "row",
@@ -731,39 +968,122 @@ const styles = StyleSheet.create({
   },
   reviewComment: {
     fontSize: 14,
-    color: "#444",
-    lineHeight: 20,
+    color: "#666",
+    lineHeight: 22,
+    paddingLeft: 4,
   },
   writeReviewButton: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    paddingVertical: 12,
+    backgroundColor: "#F8F9FA",
+    borderRadius: 16,
+    paddingVertical: 14,
     alignItems: "center",
     borderWidth: 1,
-    borderColor: "#20434F",
+    borderColor: "#6C5CE7",
     marginBottom: 20,
   },
   writeReviewText: {
-    color: "#20434F",
+    color: "#6C5CE7",
     fontWeight: "600",
+    fontSize: 15,
+  },
+  similarSection: {
+    marginBottom: 20,
+  },
+  similarCard: {
+    width: 180,
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    marginRight: 12,
+    overflow: "hidden",
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+  },
+  similarImage: {
+    width: "100%",
+    height: 100,
+  },
+  similarContent: {
+    padding: 12,
+  },
+  similarTitle: {
     fontSize: 14,
+    fontWeight: "600",
+    color: "#2D3436",
+    marginBottom: 2,
+  },
+  similarInstructor: {
+    fontSize: 12,
+    color: "#999",
+    marginBottom: 6,
+  },
+  similarFooter: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  similarRating: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+  },
+  similarRatingText: {
+    fontSize: 12,
+    fontWeight: "500",
+    color: "#2D3436",
+  },
+  similarPrice: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#6C5CE7",
+  },
+  bottomBar: {
+    flexDirection: "row",
+    backgroundColor: "#fff",
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    paddingBottom: 20,
+    borderTopWidth: 1,
+    borderTopColor: "#F1F2F6",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  bottomBarLeft: {
+    flex: 1,
+  },
+  bottomBarPrice: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#2D3436",
+  },
+  bottomBarSubtext: {
+    fontSize: 12,
+    color: "#999",
   },
   enrollButton: {
-    backgroundColor: "#20434F",
-    borderRadius: 12,
-    paddingVertical: 16,
+    flexDirection: "row",
+    backgroundColor: "#6C5CE7",
+    paddingHorizontal: 24,
+    paddingVertical: 14,
+    borderRadius: 16,
     alignItems: "center",
-    marginBottom: 10,
-    elevation: 3,
-    shadowColor: "#20434F",
+    gap: 8,
+    elevation: 4,
+    shadowColor: "#6C5CE7",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
-    shadowRadius: 6,
+    shadowRadius: 8,
+  },
+  enrolledButton: {
+    backgroundColor: "#00B894",
+    shadowColor: "#00B894",
   },
   enrollButtonText: {
     color: "#fff",
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 16,
+    fontWeight: "600",
   },
   bottomSpacing: {
     height: 20,
