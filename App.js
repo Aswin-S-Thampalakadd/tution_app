@@ -222,7 +222,7 @@ function MainTabs() {
         name="Profile"
         component={ProfileStack}
         options={{
-          tabBarLabel: "Profile",
+          tabBarLabel: "Profilee",
         }}
       />
     </Tab.Navigator>
