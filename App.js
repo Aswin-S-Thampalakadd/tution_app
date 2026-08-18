@@ -14,7 +14,6 @@ import CourseDetailScreen from "./src/screens/CourseDetailScreen";
 import MyLearningsScreen from "./src/screens/MyLearningsScreen";
 import ScheduleScreen from "./src/screens/ScheduleScreen";
 
-// Drawer Screens
 import SavedCoursesScreen from "./src/screens/SavedCoursesScreen";
 import LearningHistoryScreen from "./src/screens/LearningHistoryScreen";
 import AchievementsScreen from "./src/screens/AchievementsScreen";
@@ -27,7 +26,6 @@ const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-// Custom Drawer Content
 function CustomDrawerContent({ navigation }) {
   const menuItems = [
     { icon: "home-outline", label: "Home", screen: "HomeTabs" },
@@ -122,7 +120,6 @@ function CustomDrawerContent({ navigation }) {
   );
 }
 
-// Home Stack
 function HomeStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -132,7 +129,6 @@ function HomeStack() {
   );
 }
 
-// Learnings Stack
 function LearningsStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -142,7 +138,6 @@ function LearningsStack() {
   );
 }
 
-// Schedule Stack
 function ScheduleStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -151,7 +146,6 @@ function ScheduleStack() {
   );
 }
 
-// Profile Stack
 function ProfileStack() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -160,7 +154,6 @@ function ProfileStack() {
   );
 }
 
-// Main Tabs
 function MainTabs() {
   return (
     <Tab.Navigator
@@ -229,7 +222,6 @@ function MainTabs() {
   );
 }
 
-// Main App with Drawer
 export default function App() {
   return (
     <SafeAreaProvider>
