@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "220299209957",
+    "project_id": "tuitionapp-96931",
+    "storage_bucket": "tuitionapp-96931.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:220299209957:android:df18d6e25004b223d6780c",
+        "android_client_info": {
+          "package_name": "com.aswin.tutorapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "220299209957-hibep7ssntk32alro7rnr10sfv2645a5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aswin.tutorapp",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
+          "client_id": "220299209957-rmgf02cjpuel64gag6buu6rhb3tmqiau.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.aswin.tutorapp",
+            "certificate_hash": "b3dd3c4d13e75a5beff98ad9c3140820dd16931e"
+          }
+        },
+        {
+          "client_id": "220299209957-7nls61c7nbupdkm5u0oche7mj9atiusl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMGyAWe4KtTG3QQpy2hBDNBLCwjkIS4qU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "220299209957-7nls61c7nbupdkm5u0oche7mj9atiusl.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
