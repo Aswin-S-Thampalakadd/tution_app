@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createDrawerNavigator } from "@react-navigation/drawer";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -6,15 +6,29 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { Ionicons } from "@expo/vector-icons";
 import { Provider as PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { View, Text, Image, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "./src/config/firebase";
+import { checkUserRole, signOutUser } from "./src/services/authService";
+import * as SplashScreen from "expo-splash-screen";
 
+import SignInScreen from "./src/screens/SignInScreen";
+import StudentUpdateScreen from "./src/screens/StudentUpdateScreen";
+import TeacherUpdateScreen from "./src/screens/TeacherUpdateScreen";
 import ProfileScreen from "./src/screens/ProfileScreen";
 import HomeScreen from "./src/screens/HomeScreen";
 import CourseDetailScreen from "./src/screens/CourseDetailScreen";
 import MyLearningsScreen from "./src/screens/MyLearningsScreen";
 import ScheduleScreen from "./src/screens/ScheduleScreen";
 import NotificationsScreen from "./src/screens/NotificationsScreen";
-
 import SavedCoursesScreen from "./src/screens/SavedCoursesScreen";
 import LearningHistoryScreen from "./src/screens/LearningHistoryScreen";
 import AchievementsScreen from "./src/screens/AchievementsScreen";
@@ -23,11 +37,13 @@ import SettingsScreen from "./src/screens/SettingsScreen";
 import HelpSupportScreen from "./src/screens/HelpSupportScreen";
 import AboutScreen from "./src/screens/AboutScreen";
 
+SplashScreen.preventAutoHideAsync();
+
 const Tab = createBottomTabNavigator();
 const Stack = createStackNavigator();
 const Drawer = createDrawerNavigator();
 
-function CustomDrawerContent({ navigation }) {
+function CustomDrawerContent({ navigation, userData, onLogout }) {
   const menuItems = [
     { icon: "home-outline", label: "Home", screen: "HomeTabs" },
     {
@@ -83,11 +99,13 @@ function CustomDrawerContent({ navigation }) {
     <View style={styles.drawerContainer}>
       <View style={styles.drawerHeader}>
         <Image
-          source={{ uri: "https://i.pravatar.cc/150?img=3" }}
+          source={{
+            uri: userData?.photoURL || "https://i.pravatar.cc/150?img=3",
+          }}
           style={styles.drawerAvatar}
         />
-        <Text style={styles.drawerName}>John Doe</Text>
-        <Text style={styles.drawerEmail}>john.doe@email.com</Text>
+        <Text style={styles.drawerName}>{userData?.displayName || "User"}</Text>
+        <Text style={styles.drawerEmail}>{userData?.email || ""}</Text>
       </View>
       <View style={styles.drawerItems}>
         {menuItems.map((item, index) => (
@@ -107,10 +125,7 @@ function CustomDrawerContent({ navigation }) {
         ))}
       </View>
       <View style={styles.drawerFooter}>
-        <TouchableOpacity
-          style={styles.drawerItem}
-          onPress={() => alert("Logout")}
-        >
+        <TouchableOpacity style={styles.drawerItem} onPress={onLogout}>
           <Ionicons name="log-out-outline" size={22} color="#FF6B6B" />
           <Text style={[styles.drawerItemText, { color: "#FF6B6B" }]}>
             Logout
@@ -176,9 +191,8 @@ function MainTabs() {
           height: 60,
           paddingBottom: 8,
         },
-        tabBarIcon: ({ color, focused, size }) => {
+        tabBarIcon: ({ color, focused }) => {
           let iconName;
-
           if (route.name === "Home") {
             iconName = focused ? "home" : "home-outline";
           } else if (route.name === "Learnings") {
@@ -188,7 +202,6 @@ function MainTabs() {
           } else {
             iconName = focused ? "person" : "person-outline";
           }
-
           return (
             <Ionicons name={iconName} size={focused ? 26 : 22} color={color} />
           );
@@ -203,35 +216,111 @@ function MainTabs() {
       <Tab.Screen
         name="Home"
         component={HomeStack}
-        options={{
-          tabBarLabel: "Home",
-        }}
+        options={{ tabBarLabel: "Home" }}
       />
-
       <Tab.Screen
         name="Learnings"
         component={LearningsStack}
-        options={{
-          tabBarLabel: "Learnings",
-        }}
+        options={{ tabBarLabel: "Learnings" }}
       />
-
       <Tab.Screen
         name="Schedule"
         component={ScheduleStack}
-        options={{
-          tabBarLabel: "Schedule",
-        }}
+        options={{ tabBarLabel: "Schedule" }}
       />
-
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
-        options={{
-          tabBarLabel: "Profile",
-        }}
+        options={{ tabBarLabel: "Profile" }}
       />
     </Tab.Navigator>
+  );
+}
+
+function MainApp({ user, onLogout }) {
+  return (
+    <Drawer.Navigator
+      drawerContent={(props) => (
+        <CustomDrawerContent {...props} userData={user} onLogout={onLogout} />
+      )}
+      screenOptions={{
+        headerShown: false,
+        drawerStyle: { width: 280 },
+        drawerActiveTintColor: "#6C5CE7",
+        drawerInactiveTintColor: "#999",
+      }}
+    >
+      <Drawer.Screen name="HomeTabs" component={MainTabs} />
+      <Drawer.Screen name="SavedCourses" component={SavedCoursesScreen} />
+      <Drawer.Screen name="LearningHistory" component={LearningHistoryScreen} />
+      <Drawer.Screen name="Achievements" component={AchievementsScreen} />
+      <Drawer.Screen name="Payments" component={PaymentsScreen} />
+      <Drawer.Screen name="Settings" component={SettingsScreen} />
+      <Drawer.Screen name="HelpSupport" component={HelpSupportScreen} />
+      <Drawer.Screen name="About" component={AboutScreen} />
+    </Drawer.Navigator>
+  );
+}
+
+function AuthNavigator() {
+  const [user, setUser] = useState(null);
+  const [userRole, setUserRole] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setUser(firebaseUser);
+      if (firebaseUser) {
+        try {
+          const role = await checkUserRole(firebaseUser.uid);
+          setUserRole(role);
+        } catch (error) {
+          console.error("Error checking user role:", error);
+          setUserRole(null);
+        }
+      } else {
+        setUserRole(null);
+      }
+      setIsLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await signOutUser();
+      setUser(null);
+      setUserRole(null);
+    } catch (error) {
+      Alert.alert("Error", "Failed to logout. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6C5CE7" />
+      </View>
+    );
+  }
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        {!user ? (
+          <Stack.Screen name="SignIn" component={SignInScreen} />
+        ) : userRole === "student" ? (
+          <Stack.Screen name="StudentUpdate" component={StudentUpdateScreen} />
+        ) : userRole === "teacher" ? (
+          <Stack.Screen name="TeacherUpdate" component={TeacherUpdateScreen} />
+        ) : (
+          <Stack.Screen name="MainApp">
+            {() => <MainApp user={user} onLogout={handleLogout} />}
+          </Stack.Screen>
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
 
@@ -239,37 +328,19 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <PaperProvider>
-        <NavigationContainer>
-          <Drawer.Navigator
-            drawerContent={(props) => <CustomDrawerContent {...props} />}
-            screenOptions={{
-              headerShown: false,
-              drawerStyle: {
-                width: 280,
-              },
-              drawerActiveTintColor: "#6C5CE7",
-              drawerInactiveTintColor: "#999",
-            }}
-          >
-            <Drawer.Screen name="HomeTabs" component={MainTabs} />
-            <Drawer.Screen name="SavedCourses" component={SavedCoursesScreen} />
-            <Drawer.Screen
-              name="LearningHistory"
-              component={LearningHistoryScreen}
-            />
-            <Drawer.Screen name="Achievements" component={AchievementsScreen} />
-            <Drawer.Screen name="Payments" component={PaymentsScreen} />
-            <Drawer.Screen name="Settings" component={SettingsScreen} />
-            <Drawer.Screen name="HelpSupport" component={HelpSupportScreen} />
-            <Drawer.Screen name="About" component={AboutScreen} />
-          </Drawer.Navigator>
-        </NavigationContainer>
+        <AuthNavigator />
       </PaperProvider>
     </SafeAreaProvider>
   );
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#F8F9FE",
+  },
   drawerContainer: {
     flex: 1,
     backgroundColor: "#fff",
